@@ -1,0 +1,86 @@
+frontend/src/App.tsx
+import { useEffect, useState, type ReactNode } from 'react';
+import { Activity, BatteryCharging, CloudSun, Gauge, Leaf, SunMedium } from 'lucide-react';
+import { useMutation } from '@tanstack/react-query';
+import { SystemForm } from './components/SystemForm';
+import { ResultsPanel } from './components/ResultsPanel';
+import { healthCheck, runSimulation } from './services/api';
+import type { SimulationRequest, SimulationResult } from './types';
+
+export default function App() {
+  const [result, setResult] = useState<SimulationResult | null>(null);
+  const [backendStatus, setBackendStatus] = useState<string>('Checking...');
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: runSimulation,
+    onSuccess: (data) => setResult(data),
+    onError: () => {
+      setResult(null);
+      alert('Simulation failed. Please check your inputs and retry.');
+    }
+  });
+
+  useEffect(() => {
+    healthCheck()
+      .then((response) => setBackendStatus(response.status === 'ok' ? 'Connected' : 'Unavailable'))
+      .catch(() => setBackendStatus('Unavailable'));
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-white">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <header className="mb-8 overflow-hidden rounded-3xl border border-solar-500/20 bg-gradient-to-r from-slate-900 via-slate-900 to-solar-900/30 p-6 shadow-glow">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-solar-400/30 bg-solar-500/10 px-3 py-1 text-[10px] uppercase tracking-[0.25em] text-solar-200">
+                <SunMedium className="h-3.5 w-3.5" />
+                Solar Design Studio
+              </div>
+              <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                Comprehensive Solar Power System Simulator
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm text-slate-300 sm:text-base">
+                Design, model, and evaluate photovoltaic systems using engineering assumptions, resource inputs,
+                storage sizing, load modeling, and economic analysis.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-sm text-slate-200 sm:grid-cols-4">
+              <StatusBadge icon={<CloudSun className="h-4 w-4" />} label="Climate" value="GHI" />
+              <StatusBadge icon={<Gauge className="h-4 w-4" />} label="Performance" value="PR" />
+              <StatusBadge icon={<BatteryCharging className="h-4 w-4" />} label="Storage" value="BESS" />
+              <StatusBadge icon={<Leaf className="h-4 w-4" />} label="API" value={backendStatus} />
+            </div>
+          </div>
+        </header>
+
+        <main className="grid gap-8 xl:grid-cols-[1.1fr_1.5fr]">
+          <section>
+            <SystemForm onSubmit={(payload: SimulationRequest) => mutate(payload)} isLoading={isPending} />
+          </section>
+
+          <section>
+            <div className="mb-4 flex items-center gap-3 text-slate-200">
+              <Activity className="h-5 w-5 text-solar-300" />
+              <span className="text-[10px] uppercase tracking-[0.3em]">Evaluation dashboard</span>
+            </div>
+            <ResultsPanel result={result} />
+          </section>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+function StatusBadge({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-slate-700 bg-slate-900/70 p-3">
+      <div className="mb-2 flex items-center justify-between text-slate-300">
+        {icon}
+        <span className="text-[10px] uppercase tracking-[0.2em]">{label}</span>
+      </div>
+      <div className="text-base font-semibold text-white">{value}</div>
+    </div>
+  );
+}
+

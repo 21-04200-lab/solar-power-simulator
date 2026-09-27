@@ -1,0 +1,77 @@
+backend/src/types.ts
+export interface LocationInput {
+  latitude: number;
+  longitude: number;
+  altitudeM: number;
+  ghiKwhM2Day: number;
+}
+
+export interface SystemInput {
+  pvCapacityKw: number;
+  panelEfficiency: number;
+  panelAreaM2: number;
+  tiltDeg: number;
+  azimuthDeg: number;
+  temperatureCoeffPerC: number;
+  systemLossesPercent: number;
+  inverterEfficiency: number;
+  batteryCapacityKwh: number;
+  maxDepthOfDischarge: number;
+  batteryEfficiency: number;
+  batteryPowerKw: number;
+}
+
+export interface LoadInput {
+  dailyLoadKwh: number;
+  peakLoadKw: number;
+  loadProfile: number[];
+}
+
+export interface EconomicInput {
+  capitalCostUsd: number;
+  maintenanceCostUsdPerYear: number;
+  energyPriceUsdPerKwh: number;
+  discountRate: number;
+  projectLifetimeYears: number;
+  gridCarbonFactorKgPerKwh: number;
+}
+
+export interface SimulationInput {
+  projectName: string;
+  location: LocationInput;
+  system: SystemInput;
+  load: LoadInput;
+  economic: EconomicInput;
+}
+
+export interface MonthlyEnergyPoint {
+  month: string;
+  generationKwh: number;
+  loadKwh: number;
+  surplusKwh: number;
+}
+
+export interface SimulationResult {
+  projectName: string;
+  annualGenerationKwh: number;
+  annualLoadKwh: number;
+  annualSurplusKwh: number;
+  performanceRatio: number;
+  capacityFactor: number;
+  specificYieldKwhPerKw: number;
+  autonomyHours: number;
+  batteryAutonomyDays: number;
+  annualSavingsUsd: number;
+  lcoeUsdPerKwh: number;
+  paybackYears: number;
+  co2AvoidanceKg: number;
+  systemEfficiency: number;
+  monthlyEnergy: MonthlyEnergyPoint[];
+  dailyGeneration: Array<{ hour: string; generationKwh: number; loadKwh: number }>;
+  energyBalance: {
+    selfConsumptionPercent: number;
+    gridImportKwh: number;
+    gridExportKwh: number;
+  };
+  standards: string[];
+}

@@ -1,0 +1,326 @@
+frontend/src/components/SystemForm.tsx
+import { useState } from 'react';
+import type { SimulationRequest } from '../types';
+
+const defaultForm: SimulationRequest = {
+  projectName: 'Thesis Solar Feasibility Study',
+  location: {
+    latitude: 6.5244,
+    longitude: 3.3792,
+    altitudeM: 40,
+    ghiKwhM2Day: 5.4
+  },
+  system: {
+    pvCapacityKw: 12,
+    panelEfficiency: 0.2,
+    panelAreaM2: 60,
+    tiltDeg: 15,
+    azimuthDeg: 180,
+    temperatureCoeffPerC: 0.004,
+    systemLossesPercent: 14,
+    inverterEfficiency: 0.96,
+    batteryCapacityKwh: 28,
+    maxDepthOfDischarge: 0.8,
+    batteryEfficiency: 0.92,
+    batteryPowerKw: 8
+  },
+  load: {
+    dailyLoadKwh: 38,
+    peakLoadKw: 11,
+    loadProfile: [0.35, 0.3, 0.28, 0.32, 0.4, 0.7, 0.95, 1.1, 0.9, 0.7, 0.65, 0.52, 0.6, 0.8, 0.9, 1.0, 1.1, 1.2, 1.0, 0.75, 0.72, 0.66, 0.48, 0.38]
+  },
+  economic: {
+    capitalCostUsd: 24500,
+    maintenanceCostUsdPerYear: 300,
+    energyPriceUsdPerKwh: 0.18,
+    discountRate: 0.08,
+    projectLifetimeYears: 20,
+    gridCarbonFactorKgPerKwh: 0.425
+  }
+};
+
+interface SystemFormProps {
+  onSubmit: (payload: SimulationRequest) => void;
+  isLoading: boolean;
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block text-sm text-slate-300">
+      <span className="mb-2 block font-medium text-slate-200">{label}</span>
+      {children}
+    </label>
+  );
+}
+
+export function SystemForm({ onSubmit, isLoading }: SystemFormProps) {
+  const [form, setForm] = useState<SimulationRequest>(defaultForm);
+
+  return (
+    <form
+      className="space-y-6"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSubmit(form);
+      }}
+    >
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 shadow-glow">
+        <h3 className="mb-4 text-lg font-semibold text-white">Project metadata</h3>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field label="Project name">
+            <input
+              value={form.projectName}
+              onChange={(event) => setForm((current) => ({ ...current, projectName: event.target.value }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none transition focus:border-solar-500"
+            />
+          </Field>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+        <h3 className="mb-4 text-lg font-semibold text-white">Location and climate</h3>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Field label="Latitude (°)">
+            <input
+              type="number"
+              step="0.1"
+              value={form.location.latitude}
+              onChange={(event) => setForm((current) => ({ ...current, location: { ...current.location, latitude: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+          <Field label="Longitude (°)">
+            <input
+              type="number"
+              step="0.1"
+              value={form.location.longitude}
+              onChange={(event) => setForm((current) => ({ ...current, location: { ...current.location, longitude: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+          <Field label="Altitude (m)">
+            <input
+              type="number"
+              step="1"
+              value={form.location.altitudeM}
+              onChange={(event) => setForm((current) => ({ ...current, location: { ...current.location, altitudeM: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+          <Field label="GHI (kWh/m²/day)">
+            <input
+              type="number"
+              step="0.1"
+              value={form.location.ghiKwhM2Day}
+              onChange={(event) => setForm((current) => ({ ...current, location: { ...current.location, ghiKwhM2Day: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+        <h3 className="mb-4 text-lg font-semibold text-white">PV system design</h3>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Field label="PV capacity (kW)">
+            <input
+              type="number"
+              step="0.1"
+              value={form.system.pvCapacityKw}
+              onChange={(event) => setForm((current) => ({ ...current, system: { ...current.system, pvCapacityKw: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+          <Field label="Panel efficiency">
+            <input
+              type="number"
+              step="0.01"
+              value={form.system.panelEfficiency}
+              onChange={(event) => setForm((current) => ({ ...current, system: { ...current.system, panelEfficiency: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+          <Field label="Panel area (m²)">
+            <input
+              type="number"
+              step="1"
+              value={form.system.panelAreaM2}
+              onChange={(event) => setForm((current) => ({ ...current, system: { ...current.system, panelAreaM2: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+          <Field label="Tilt (°)">
+            <input
+              type="number"
+              step="1"
+              value={form.system.tiltDeg}
+              onChange={(event) => setForm((current) => ({ ...current, system: { ...current.system, tiltDeg: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+          <Field label="Azimuth (°)">
+            <input
+              type="number"
+              step="1"
+              value={form.system.azimuthDeg}
+              onChange={(event) => setForm((current) => ({ ...current, system: { ...current.system, azimuthDeg: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+          <Field label="Temperature coefficient">
+            <input
+              type="number"
+              step="0.001"
+              value={form.system.temperatureCoeffPerC}
+              onChange={(event) => setForm((current) => ({ ...current, system: { ...current.system, temperatureCoeffPerC: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+          <Field label="System losses (%)">
+            <input
+              type="number"
+              step="1"
+              value={form.system.systemLossesPercent}
+              onChange={(event) => setForm((current) => ({ ...current, system: { ...current.system, systemLossesPercent: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+          <Field label="Inverter efficiency">
+            <input
+              type="number"
+              step="0.01"
+              value={form.system.inverterEfficiency}
+              onChange={(event) => setForm((current) => ({ ...current, system: { ...current.system, inverterEfficiency: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+          <Field label="Battery capacity (kWh)">
+            <input
+              type="number"
+              step="1"
+              value={form.system.batteryCapacityKwh}
+              onChange={(event) => setForm((current) => ({ ...current, system: { ...current.system, batteryCapacityKwh: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+          <Field label="Depth of discharge">
+            <input
+              type="number"
+              step="0.01"
+              value={form.system.maxDepthOfDischarge}
+              onChange={(event) => setForm((current) => ({ ...current, system: { ...current.system, maxDepthOfDischarge: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+          <Field label="Battery efficiency">
+            <input
+              type="number"
+              step="0.01"
+              value={form.system.batteryEfficiency}
+              onChange={(event) => setForm((current) => ({ ...current, system: { ...current.system, batteryEfficiency: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+          <Field label="Battery power (kW)">
+            <input
+              type="number"
+              step="1"
+              value={form.system.batteryPowerKw}
+              onChange={(event) => setForm((current) => ({ ...current, system: { ...current.system, batteryPowerKw: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+        <h3 className="mb-4 text-lg font-semibold text-white">Load and economics</h3>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Field label="Daily load (kWh)">
+            <input
+              type="number"
+              step="1"
+              value={form.load.dailyLoadKwh}
+              onChange={(event) => setForm((current) => ({ ...current, load: { ...current.load, dailyLoadKwh: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+          <Field label="Peak load (kW)">
+            <input
+              type="number"
+              step="0.1"
+              value={form.load.peakLoadKw}
+              onChange={(event) => setForm((current) => ({ ...current, load: { ...current.load, peakLoadKw: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+          <Field label="Capital cost (USD)">
+            <input
+              type="number"
+              step="100"
+              value={form.economic.capitalCostUsd}
+              onChange={(event) => setForm((current) => ({ ...current, economic: { ...current.economic, capitalCostUsd: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+          <Field label="Maintenance (USD/yr)">
+            <input
+              type="number"
+              step="10"
+              value={form.economic.maintenanceCostUsdPerYear}
+              onChange={(event) => setForm((current) => ({ ...current, economic: { ...current.economic, maintenanceCostUsdPerYear: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+          <Field label="Energy price (USD/kWh)">
+            <input
+              type="number"
+              step="0.01"
+              value={form.economic.energyPriceUsdPerKwh}
+              onChange={(event) => setForm((current) => ({ ...current, economic: { ...current.economic, energyPriceUsdPerKwh: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+          <Field label="Discount rate">
+            <input
+              type="number"
+              step="0.01"
+              value={form.economic.discountRate}
+              onChange={(event) => setForm((current) => ({ ...current, economic: { ...current.economic, discountRate: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+          <Field label="Lifetime (years)">
+            <input
+              type="number"
+              step="1"
+              value={form.economic.projectLifetimeYears}
+              onChange={(event) => setForm((current) => ({ ...current, economic: { ...current.economic, projectLifetimeYears: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+          <Field label="Grid carbon factor (kg/kWh)">
+            <input
+              type="number"
+              step="0.01"
+              value={form.economic.gridCarbonFactorKgPerKwh}
+              onChange={(event) => setForm((current) => ({ ...current, economic: { ...current.economic, gridCarbonFactorKgPerKwh: Number(event.target.value) } }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-solar-500"
+            />
+          </Field>
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="rounded-xl bg-solar-500 px-5 py-3 font-medium text-white transition hover:bg-solar-400 disabled:cursor-not-allowed disabled:bg-slate-700"
+        >
+          {isLoading ? 'Running simulation...' : 'Run simulation'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
